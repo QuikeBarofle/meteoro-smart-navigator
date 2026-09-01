@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador Hospital Indemnity</title>
+  <style>
+    :root {
+      --background: #edf2f5;
+      --foreground: #102a36;
+      --muted-foreground: #667982;
+      --border: #d5e0e5;
+      --card: #ffffff;
+      --primary: #052f45;
+      --primary-hover: #0a405b;
+      --accent: #e9a425;
+      --destructive: #b52d34;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--foreground);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(233, 164, 37, .13), transparent 28rem),
+        var(--background);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      display: block;
+      height: 5px;
+      background: var(--accent);
+    }
+
+    .training-header {
+      color: #fff;
+      background: #052333;
+      padding: 42px max(24px, calc((100vw - 1180px) / 2));
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .training-header p {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .18em;
+    }
+
+    .training-header h1 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+
+    .training-header span {
+      display: block;
+      max-width: 760px;
+      margin-top: 16px;
+      color: #d7e5eb;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    #hi-sim-2026 {
+      width: min(1180px, calc(100% - 32px));
+      margin: 24px auto 42px;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--primary);
+      font-size: 24px;
+    }
+
+    button, input, select { font: inherit; }
+
+    .viz-controls {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 12px 34px rgba(5,35,51,.06);
+    }
+
+    .form-label {
+      display: grid;
+      gap: 7px;
+      color: var(--foreground);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-control,
+    .form-select {
+      width: 100%;
+      min-height: 44px;
+      padding: 0 12px;
+      border: 1px solid #c6d4da;
+      border-radius: 8px;
+      color: var(--foreground);
+      background: #fff;
+      outline: none;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(233,164,37,.16);
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 44px;
+      padding: 9px 11px;
+      border: 1px solid #c6d4da;
+      border-radius: 8px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-check-input {
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      accent-color: var(--primary);
+    }
+
+    .btn {
+      min-height: 40px;
+      padding: 0 15px;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      color: #fff;
+      background: var(--primary);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .btn:hover { background: var(--primary-hover); }
+
+    .btn-ghost {
+      border-color: transparent;
+      color: var(--destructive);
+      background: transparent;
+    }
+
+    .btn-ghost:hover { background: #fff1f1; }
+
+    .viz-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .viz-grid { display: grid; gap: 14px; }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      padding: 22px;
+    }
+
+    .viz-stat-value {
+      margin: 10px 0 7px;
+      color: var(--primary);
+      font-size: clamp(26px, 5vw, 39px);
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+
+    .text-small { font-size: 12px; line-height: 1.5; }
+    .text-muted { color: var(--muted-foreground); }
+    .text-destructive { color: var(--destructive); font-weight: 700; }
+    .text-end { text-align: right; }
+
+    section[aria-labelledby="hi-people-heading"] {
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.96);
+    }
+
+    .hi-person strong {
+      color: var(--primary);
+      font-size: 18px;
+    }
+
+    .hi-more summary {
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      background: var(--primary);
+      padding: 8px 16px 10px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 720px;
+      border-collapse: collapse;
+      color: #dce8ed;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 14px 10px;
+      border-bottom: 1px solid rgba(255,255,255,.13);
+    }
+
+    thead th {
+      color: #a9c3ce;
+      font-size: 11px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    tbody th { color: #fff; text-align: left; }
+    tbody strong { color: var(--accent); }
+    tbody tr:last-child th,
+    tbody tr:last-child td { border-bottom: 0; }
+
+    @media (max-width: 850px) {
+      .viz-controls { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+
+    @media (max-width: 620px) {
+      .training-header { padding: 34px 20px; }
+      .viz-controls { grid-template-columns: 1fr; padding: 18px; }
+      section[aria-labelledby="hi-people-heading"] { padding: 18px; }
+      .hi-presets { align-items: stretch; flex-direction: column; }
+      .hi-presets .text-small { margin-bottom: 2px; }
+    }
+  </style>
+</head>
+<body>
+<header class="training-header">
+  <p>HERRAMIENTA DE ENTRENAMIENTO</p>
+  <h1>Simulador Hospital Indemnity</h1>
+  <span>Practica casos individuales y familiares, compara Base con Enhanced y explica cada beneficio con claridad.</span>
+</header>
+<div id="hi-sim-2026">
+  <div class="viz-controls" aria-label="Configuración de la póliza">
+    <label class="form-label" for="hi-coverage">
+      Cobertura
+      <select class="form-select" id="hi-coverage">
+        <option value="individual">Individual</option>
+        <option value="pareja">Pareja</option>
+        <option value="padre-hijos">Padre + hijos</option>
+        <option value="familiar">Familiar</option>
+      </select>
+    </label>
+    <label class="form-label" for="hi-rate-age">
+      Edad usada en la tabla
+      <input class="form-control" id="hi-rate-age" type="number" min="18" max="75" value="47">
+    </label>
+    <label class="form-label" for="hi-plan">
+      Plan
+      <select class="form-select" id="hi-plan">
+        <option value="enhanced" selected>Enhanced / Mejorado</option>
+        <option value="base">Base</option>
+      </select>
+    </label>
+    <label class="form-label" for="hi-admission">
+      Beneficio de admisión
+      <select class="form-select" id="hi-admission">
+        <option value="1500" selected>$1,500 · Prioridad</option>
+        <option value="1000">$1,000</option>
+        <option value="500">$500</option>
+      </select>
+    </label>
+  </div>
+
+  <p id="hi-age-rule" class="text-small text-muted" hidden>
+    La tabla no identifica qué edad gobierna una cobertura de varias personas. Selecciona manualmente la edad usada para cotizar y confirma la regla oficial.
+  </p>
+
+  <div class="viz-row hi-presets" aria-label="Ejemplos">
+    <span class="text-small text-muted">Ejemplos:</span>
+    <button class="btn" type="button" id="hi-example-individual">Individual, 47 años</button>
+    <button class="btn" type="button" id="hi-example-family">Familia, varios eventos</button>
+  </div>
+
+  <div class="viz-grid hi-metrics" aria-live="polite">
+    <div class="card viz-stat">
+      <div class="text-muted">Prima según tabla</div>
+      <div class="viz-stat-value" id="hi-rate-value">—</div>
+      <div class="text-small text-muted" id="hi-rate-context"></div>
+    </div>
+    <div class="card viz-stat">
+      <div class="text-muted">Admisión seleccionada</div>
+      <div class="viz-stat-value" id="hi-admission-value">—</div>
+      <div class="text-small text-muted">Máximo 1 por persona cubierta y año calendario</div>
+    </div>
+    <div class="card viz-stat">
+      <div class="text-muted">Beneficio del ejemplo</div>
+      <div class="viz-stat-value" id="hi-total-value">—</div>
+      <div class="text-small text-muted" id="hi-total-context"></div>
+    </div>
+  </div>
+
+  <section aria-labelledby="hi-people-heading">
+    <div class="viz-row hi-section-heading">
+      <h2 id="hi-people-heading">Personas del ejemplo</h2>
+      <button class="btn" type="button" id="hi-add-person">+ Agregar dependiente</button>
+    </div>
+    <div id="hi-people"></div>
+  </section>
+
+  <div class="table-responsive hi-results">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col">Persona</th>
+          <th scope="col" class="text-end">Admisión</th>
+          <th scope="col" class="text-end">Hospital</th>
+          <th scope="col" class="text-end">UCI</th>
+          <th scope="col" class="text-end">Otros</th>
+          <th scope="col" class="text-end">Total</th>
+        </tr>
+      </thead>
+      <tbody id="hi-breakdown"></tbody>
+    </table>
+  </div>
+
+  <div id="hi-warnings" class="text-small text-destructive" role="status"></div>
+    <p class="text-small text-muted">
+    Fuente: tablas CEB-2026 suministradas para entrenamiento. Al registrar uno o más días como inpatient, la admisión se incluye automáticamente para esa persona, salvo que ya haya recibido ese beneficio durante el mismo año calendario. Observación, emergencia, tratamiento ambulatorio y rehabilitación no activan admisión. El cálculo modela un evento por persona, aplica los máximos visibles y no determina elegibilidad ni sustituye la cotización oficial. La exoneración de prima no se suma como pago en efectivo. Los anexos de diagnóstico y cirugía no están incluidos en la prima mostrada.
+  </p>
+</div>
+
+<style>
+  #hi-sim-2026 {
+    display: grid;
+    gap: 1rem;
+    color: var(--foreground);
+  }
+
+  #hi-sim-2026 .hi-presets {
+    justify-content: flex-start;
+  }
+
+  #hi-sim-2026 .hi-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #hi-sim-2026 .hi-section-heading {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  #hi-sim-2026 .hi-person {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+  }
+
+  #hi-sim-2026 .hi-person:first-child {
+    border-top: 0;
+  }
+
+  #hi-sim-2026 .hi-person-heading {
+    justify-content: space-between;
+  }
+
+  #hi-sim-2026 .hi-person-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  #hi-sim-2026 .hi-checks {
+    align-items: end;
+  }
+
+  #hi-sim-2026 .hi-more {
+    color: var(--foreground);
+  }
+
+  #hi-sim-2026 .hi-more-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  #hi-sim-2026 .hi-results {
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
+  }
+
+  #hi-sim-2026 [hidden] {
+    display: none !important;
+  }
+
+  @media (max-width: 620px) {
+    #hi-sim-2026 .hi-metrics,
+    #hi-sim-2026 .hi-person-grid,
+    #hi-sim-2026 .hi-more-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    "use strict";
+
+    const root = document.getElementById("hi-sim-2026");
+    if (!root) return;
+
+    const rates = {
+      "18-49": {
+        "individual": { "base": { "500": 16.04, "1000": 19.8, "1500": 23.52 }, "enhanced": { "500": 24.44, "1000": 28.2, "1500": 31.96 } },
+        "pareja": { "base": { "500": 35.6, "1000": 43.92, "1500": 52.24 }, "enhanced": { "500": 54.28, "1000": 62.6, "1500": 70.92 } },
+        "padre-hijos": { "base": { "500": 28.88, "1000": 35.64, "1500": 42.36 }, "enhanced": { "500": 44.04, "1000": 50.76, "1500": 57.52 } },
+        "familiar": { "base": { "500": 48.44, "1000": 59.76, "1500": 71.08 }, "enhanced": { "500": 73.88, "1000": 85.16, "1500": 96.48 } }
+      },
+      "50-59": {
+        "individual": { "base": { "500": 22.24, "1000": 27.2, "1500": 32.2 }, "enhanced": { "500": 36.16, "1000": 41.16, "1500": 46.16 } },
+        "pareja": { "base": { "500": 49.32, "1000": 60.4, "1500": 71.48 }, "enhanced": { "500": 80.32, "1000": 91.4, "1500": 102.48 } },
+        "padre-hijos": { "base": { "500": 33.64, "1000": 41.2, "1500": 48.76 }, "enhanced": { "500": 54.76, "1000": 62.32, "1500": 69.88 } },
+        "familiar": { "base": { "500": 60.76, "1000": 74.4, "1500": 88.04 }, "enhanced": { "500": 98.92, "1000": 112.56, "1500": 126.2 } }
+      },
+      "60-64": {
+        "individual": { "base": { "500": 27.24, "1000": 33.64, "1500": 40.04 }, "enhanced": { "500": 46.4, "1000": 52.84, "1500": 59.24 } },
+        "pareja": { "base": { "500": 60.44, "1000": 74.68, "1500": 88.92 }, "enhanced": { "500": 103.04, "1000": 117.28, "1500": 131.52 } },
+        "padre-hijos": { "base": { "500": 37.88, "1000": 46.84, "1500": 55.76 }, "enhanced": { "500": 64.6, "1000": 73.52, "1500": 82.48 } },
+        "familiar": { "base": { "500": 71.12, "1000": 87.88, "1500": 104.64 }, "enhanced": { "500": 121.24, "1000": 138, "1500": 154.76 } }
+      },
+      "65-75": {
+        "individual": { "base": { "500": 34.24, "1000": 43.24, "1500": 52.24 }, "enhanced": { "500": 61.2, "1000": 70.2, "1500": 79.2 } },
+        "pareja": { "base": { "500": 76.04, "1000": 96.04, "1500": 116 }, "enhanced": { "500": 135.88, "1000": 155.84, "1500": 175.84 } },
+        "padre-hijos": { "base": { "500": 42.8, "1000": 54.08, "1500": 65.32 }, "enhanced": { "500": 76.52, "1000": 87.76, "1500": 99 } },
+        "familiar": { "base": { "500": 84.6, "1000": 106.84, "1500": 129.08 }, "enhanced": { "500": 151.16, "1000": 173.4, "1500": 195.64 } }
+      }
+    };
+
+    const coverageNames = {
+      "individual": "Individual",
+      "pareja": "Pareja",
+      "padre-hijos": "Padre + hijos",
+      "familiar": "Familiar"
+    };
+
+    const relationNames = {
+      "principal": "Principal",
+      "pareja": "Pareja",
+      "dependiente": "Hijo o nieto"
+    };
+
+    const money = new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2
+    });
+
+    const state = {
+      people: []
+    };
+
+    const controls = {
+      coverage: root.querySelector("#hi-coverage"),
+      rateAge: root.querySelector("#hi-rate-age"),
+      plan: root.querySelector("#hi-plan"),
+      admission: root.querySelector("#hi-admission"),
+      ageRule: root.querySelector("#hi-age-rule"),
+      people: root.querySelector("#hi-people"),
+      addPerson: root.querySelector("#hi-add-person"),
+      breakdown: root.querySelector("#hi-breakdown"),
+      warnings: root.querySelector("#hi-warnings"),
+      rateValue: root.querySelector("#hi-rate-value"),
+      rateContext: root.querySelector("#hi-rate-context"),
+      admissionValue: root.querySelector("#hi-admission-value"),
+      totalValue: root.querySelector("#hi-total-value"),
+      totalContext: root.querySelector("#hi-total-context"),
+      individualExample: root.querySelector("#hi-example-individual"),
+      familyExample: root.querySelector("#hi-example-family")
+    };
+
+    function person(name, relation, age, values = {}) {
+      return {
+        id: Math.random().toString(36).slice(2),
+        name,
+        relation,
+        age,
+        admission: false,
+        admissionAlreadyPaid: false,
+        hospitalDays: 0,
+        icuDays: 0,
+        observationVisits: 0,
+        rehabDays: 0,
+        screening: false,
+        medicalVisits: 0,
+        labServices: 0,
+        diagnosisRider: false,
+        surgeryRider: false,
+        ...values
+      };
+    }
+
+    function getBand(age) {
+      if (age >= 18 && age <= 49) return "18-49";
+      if (age >= 50 && age <= 59) return "50-59";
+      if (age >= 60 && age <= 64) return "60-64";
+      if (age >= 65 && age <= 75) return "65-75";
+      return null;
+    }
+
+    function numeric(value, max = Number.POSITIVE_INFINITY) {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) return 0;
+      return Math.max(0, Math.min(max, parsed));
+    }
+
+    function validPersonAge(item) {
+      if (item.relation === "dependiente") {
+        return item.age >= 0 && item.age <= 26;
+      }
+      return item.age >= 18 && item.age <= 75;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function setCoveragePeople(coverage) {
+      if (coverage === "individual") {
+        state.people = [person("Principal", "principal", Number(controls.rateAge.value) || 47)];
+      } else if (coverage === "pareja") {
+        state.people = [
+          person("Principal", "principal", Number(controls.rateAge.value) || 47),
+          person("Pareja", "pareja", 45)
+        ];
+      } else if (coverage === "padre-hijos") {
+        state.people = [
+          person("Padre o madre", "principal", Number(controls.rateAge.value) || 47),
+          person("Dependiente", "dependiente", 16)
+        ];
+      } else {
+        state.people = [
+          person("Principal", "principal", Number(controls.rateAge.value) || 47),
+          person("Pareja", "pareja", 45),
+          person("Dependiente", "dependiente", 16)
+        ];
+      }
+      renderPeople();
+    }
+
+    function personTemplate(item, index) {
+      const removable = item.relation === "dependiente" && (controls.coverage.value === "padre-hijos" || controls.coverage.value === "familiar");
+      const automaticAdmission = numeric(item.hospitalDays) > 0 && !item.admissionAlreadyPaid;
+      if (automaticAdmission) {
+        item.admission = true;
+      } else if (item.admissionAlreadyPaid) {
+        item.admission = false;
+      }
+      return `
+        <div class="hi-person" data-person-id="${item.id}">
+          <div class="viz-row hi-person-heading">
+            <strong>${escapeHtml(item.name || `Persona ${index + 1}`)}</strong>
+            ${removable ? `<button class="btn btn-ghost hi-remove-person" type="button" data-person-id="${item.id}">Quitar</button>` : ""}
+          </div>
+          <div class="hi-person-grid">
+            <label class="form-label" for="hi-name-${item.id}">
+              Nombre del ejemplo
+              <input class="form-control hi-field" id="hi-name-${item.id}" data-key="name" type="text" value="${escapeHtml(item.name)}">
+            </label>
+            <label class="form-label" for="hi-relation-${item.id}">
+              Relación
+              <select class="form-select hi-field" id="hi-relation-${item.id}" data-key="relation">
+                <option value="principal" ${item.relation === "principal" ? "selected" : ""}>Principal</option>
+                <option value="pareja" ${item.relation === "pareja" ? "selected" : ""}>Pareja</option>
+                <option value="dependiente" ${item.relation === "dependiente" ? "selected" : ""}>Hijo o nieto</option>
+              </select>
+            </label>
+            <label class="form-label" for="hi-age-${item.id}">
+              Edad
+              <input class="form-control hi-field" id="hi-age-${item.id}" data-key="age" type="number" min="0" max="75" value="${item.age}">
+            </label>
+            <label class="form-label" for="hi-hospital-${item.id}">
+              Días hospitalizado como inpatient
+              <input class="form-control hi-field" id="hi-hospital-${item.id}" data-key="hospitalDays" type="number" min="0" max="365" value="${item.hospitalDays}">
+            </label>
+            <label class="form-label hi-enhanced-field" for="hi-icu-${item.id}">
+              Días en UCI
+              <input class="form-control hi-field" id="hi-icu-${item.id}" data-key="icuDays" type="number" min="0" max="15" value="${item.icuDays}">
+            </label>
+            <div class="viz-row hi-checks">
+              <label class="form-check" for="hi-admitted-${item.id}">
+                <input class="form-check-input hi-field" id="hi-admitted-${item.id}" data-key="admission" type="checkbox" ${item.admission ? "checked" : ""} ${numeric(item.hospitalDays) > 0 || item.admissionAlreadyPaid ? "disabled" : ""}>
+                <span class="form-check-label">${item.admissionAlreadyPaid ? "Admisión no incluida: ya se pagó este año" : automaticAdmission ? "Admisión incluida automáticamente" : "Admisión elegible confirmada"}</span>
+              </label>
+              <label class="form-check" for="hi-admission-used-${item.id}">
+                <input class="form-check-input hi-field" id="hi-admission-used-${item.id}" data-key="admissionAlreadyPaid" type="checkbox" ${item.admissionAlreadyPaid ? "checked" : ""}>
+                <span class="form-check-label">Esta persona ya recibió el beneficio de admisión este año calendario</span>
+              </label>
+            </div>
+          </div>
+          <details class="hi-more">
+            <summary>Otros beneficios del ejemplo</summary>
+            <div class="hi-more-grid">
+              <label class="form-label" for="hi-observation-${item.id}">
+                Visitas a observación
+                <input class="form-control hi-field" id="hi-observation-${item.id}" data-key="observationVisits" type="number" min="0" max="2" value="${item.observationVisits}">
+              </label>
+              <label class="form-label" for="hi-rehab-${item.id}">
+                Días en rehabilitación
+                <input class="form-control hi-field" id="hi-rehab-${item.id}" data-key="rehabDays" type="number" min="0" max="15" value="${item.rehabDays}">
+              </label>
+              <label class="form-check" for="hi-screening-${item.id}">
+                <input class="form-check-input hi-field" id="hi-screening-${item.id}" data-key="screening" type="checkbox" ${item.screening ? "checked" : ""}>
+                <span class="form-check-label">Examen anual de salud</span>
+              </label>
+              <label class="form-label hi-enhanced-field" for="hi-doctor-${item.id}">
+                Visitas médicas
+                <input class="form-control hi-field" id="hi-doctor-${item.id}" data-key="medicalVisits" type="number" min="0" max="3" value="${item.medicalVisits}">
+              </label>
+              <label class="form-label hi-enhanced-field" for="hi-lab-${item.id}">
+                Servicios Lab/X-Ray
+                <input class="form-control hi-field" id="hi-lab-${item.id}" data-key="labServices" type="number" min="0" max="2" value="${item.labServices}">
+              </label>
+              <label class="form-check" for="hi-diagnosis-${item.id}">
+                <input class="form-check-input hi-field" id="hi-diagnosis-${item.id}" data-key="diagnosisRider" type="checkbox" ${item.diagnosisRider ? "checked" : ""}>
+                <span class="form-check-label">Anexo diagnóstico</span>
+              </label>
+              <label class="form-check" for="hi-surgery-${item.id}">
+                <input class="form-check-input hi-field" id="hi-surgery-${item.id}" data-key="surgeryRider" type="checkbox" ${item.surgeryRider ? "checked" : ""}>
+                <span class="form-check-label">Anexo cirugía</span>
+              </label>
+            </div>
+          </details>
+        </div>
+      `;
+    }
+
+    function renderPeople() {
+      controls.people.innerHTML = state.people.map(personTemplate).join("");
+      root.querySelectorAll(".hi-field").forEach((field) => {
+        field.addEventListener("input", updatePersonFromField);
+        field.addEventListener("change", updatePersonFromField);
+      });
+      root.querySelectorAll(".hi-remove-person").forEach((button) => {
+        button.addEventListener("click", () => {
+          state.people = state.people.filter((item) => item.id !== button.dataset.personId);
+          renderPeople();
+        });
+      });
+      updateEnhancedVisibility();
+      calculate();
+      if (window.lucide) {
+        window.lucide.createIcons({ attrs: { width: 16, height: 16 } });
+      }
+    }
+
+    function updatePersonFromField(event) {
+      const wrapper = event.target.closest("[data-person-id]");
+      const item = state.people.find((personItem) => personItem.id === wrapper.dataset.personId);
+      if (!item) return;
+      const key = event.target.dataset.key;
+      if (event.target.type === "checkbox") {
+        item[key] = event.target.checked;
+      } else if (event.target.type === "number") {
+        item[key] = Number(event.target.value);
+      } else {
+        item[key] = event.target.value;
+      }
+      if (key === "name") {
+        const heading = wrapper.querySelector("strong");
+        heading.textContent = item.name || "Persona";
+      }
+      if (key === "hospitalDays" || key === "admissionAlreadyPaid") {
+        const admissionField = wrapper.querySelector('[data-key="admission"]');
+        const admissionLabel = admissionField.closest(".form-check").querySelector(".form-check-label");
+        const automaticAdmission = numeric(item.hospitalDays) > 0 && !item.admissionAlreadyPaid;
+        if (automaticAdmission) {
+          item.admission = true;
+          admissionField.checked = true;
+        } else if (item.admissionAlreadyPaid) {
+          item.admission = false;
+          admissionField.checked = false;
+        }
+        admissionField.disabled = numeric(item.hospitalDays) > 0 || item.admissionAlreadyPaid;
+        admissionLabel.textContent = item.admissionAlreadyPaid
+          ? "Admisión no incluida: ya se pagó este año"
+          : automaticAdmission
+            ? "Admisión incluida automáticamente"
+            : "Admisión elegible confirmada";
+      }
+      calculate();
+    }
+
+    function updateEnhancedVisibility() {
+      const isEnhanced = controls.plan.value === "enhanced";
+      root.querySelectorAll(".hi-enhanced-field").forEach((field) => {
+        field.hidden = !isEnhanced;
+      });
+    }
+
+    function calculatePerson(item, admissionAmount, isEnhanced) {
+      const eligibleAge = validPersonAge(item);
+      if (!eligibleAge) {
+        return { admission: 0, hospital: 0, icu: 0, other: 0, total: 0 };
+      }
+
+      const hospitalDays = numeric(item.hospitalDays, 365);
+      const admission = !item.admissionAlreadyPaid && (item.admission || hospitalDays > 0) ? admissionAmount : 0;
+      const icuDays = Math.min(numeric(item.icuDays, 15), hospitalDays);
+      const hospital = isEnhanced ? hospitalDays * 100 : 0;
+      const icu = isEnhanced ? icuDays * 100 : 0;
+      const observation = numeric(item.observationVisits, 2) * 100;
+      const rehab = numeric(item.rehabDays, 15) * 100;
+      const screening = item.screening ? 50 : 0;
+      const doctor = isEnhanced ? numeric(item.medicalVisits, 3) * 25 : 0;
+      const lab = isEnhanced ? numeric(item.labServices, 2) * 35 : 0;
+      const diagnosis = item.diagnosisRider ? 250 : 0;
+      const surgery = item.surgeryRider ? 500 : 0;
+      const other = observation + rehab + screening + doctor + lab + diagnosis + surgery;
+
+      return {
+        admission,
+        hospital,
+        icu,
+        other,
+        total: admission + hospital + icu + other
+      };
+    }
+
+    function calculate() {
+      const coverage = controls.coverage.value;
+      const plan = controls.plan.value;
+      const admissionKey = controls.admission.value;
+      const admissionAmount = Number(admissionKey);
+      const rateAge = Number(controls.rateAge.value);
+      const band = getBand(rateAge);
+      const rate = band ? rates[band][coverage][plan][admissionKey] : null;
+      const isEnhanced = plan === "enhanced";
+      const warnings = [];
+
+      controls.ageRule.hidden = coverage === "individual";
+      controls.addPerson.hidden = coverage === "individual" || coverage === "pareja";
+      controls.rateValue.textContent = rate === null ? "No disponible" : money.format(rate);
+      controls.rateContext.textContent = band
+        ? `${coverageNames[coverage]} · ${plan === "base" ? "Base" : "Enhanced"} · edad ${band}`
+        : "La edad de la tabla debe estar entre 18 y 75 años";
+      controls.admissionValue.textContent = money.format(admissionAmount);
+
+      if (!band) {
+        warnings.push("La edad usada para la tarifa está fuera del rango 18-75.");
+      }
+
+      state.people.forEach((item) => {
+        const automaticAdmission = numeric(item.hospitalDays) > 0 && !item.admissionAlreadyPaid;
+        if (automaticAdmission) {
+          item.admission = true;
+        } else if (item.admissionAlreadyPaid) {
+          item.admission = false;
+        }
+        const wrapper = controls.people.querySelector(`[data-person-id="${item.id}"]`);
+        const admissionField = wrapper ? wrapper.querySelector('[data-key="admission"]') : null;
+        if (admissionField) {
+          admissionField.checked = item.admission;
+          admissionField.disabled = numeric(item.hospitalDays) > 0 || item.admissionAlreadyPaid;
+          const admissionLabel = admissionField.closest(".form-check").querySelector(".form-check-label");
+          admissionLabel.textContent = item.admissionAlreadyPaid
+            ? "Admisión no incluida: ya se pagó este año"
+            : automaticAdmission
+              ? "Admisión incluida automáticamente"
+              : "Admisión elegible confirmada";
+        }
+      });
+
+      const results = state.people.map((item) => {
+        if (!validPersonAge(item)) {
+          const range = item.relation === "dependiente" ? "0-26" : "18-75";
+          warnings.push(`${item.name || relationNames[item.relation]}: edad fuera del rango ${range}.`);
+        }
+        return {
+          item,
+          values: calculatePerson(item, admissionAmount, isEnhanced)
+        };
+      });
+
+      controls.breakdown.innerHTML = results.map(({ item, values }) => `
+        <tr>
+          <th scope="row">${escapeHtml(item.name || relationNames[item.relation])}</th>
+          <td class="text-end">${money.format(values.admission)}</td>
+          <td class="text-end">${money.format(values.hospital)}</td>
+          <td class="text-end">${money.format(values.icu)}</td>
+          <td class="text-end">${money.format(values.other)}</td>
+          <td class="text-end"><strong>${money.format(values.total)}</strong></td>
+        </tr>
+      `).join("");
+
+      const total = results.reduce((sum, result) => sum + result.values.total, 0);
+      const peopleWithBenefit = results.filter((result) => result.values.total > 0).length;
+      controls.totalValue.textContent = money.format(total);
+      controls.totalContext.textContent = `${peopleWithBenefit} ${peopleWithBenefit === 1 ? "persona con beneficio" : "personas con beneficio"}`;
+      controls.warnings.textContent = warnings.join(" ");
+    }
+
+    function loadIndividualExample() {
+      controls.coverage.value = "individual";
+      controls.rateAge.value = "47";
+      controls.plan.value = "enhanced";
+      controls.admission.value = "1500";
+      state.people = [
+        person("Cliente", "principal", 47, {
+          admission: true,
+          hospitalDays: 4,
+          icuDays: 2
+        })
+      ];
+      renderPeople();
+    }
+
+    function loadFamilyExample() {
+      controls.coverage.value = "familiar";
+      controls.rateAge.value = "55";
+      controls.plan.value = "enhanced";
+      controls.admission.value = "1500";
+      state.people = [
+        person("Principal", "principal", 55, {
+          admission: true,
+          hospitalDays: 5,
+          icuDays: 2
+        }),
+        person("Pareja", "pareja", 52, {
+          admission: true,
+          hospitalDays: 3,
+          icuDays: 0,
+          medicalVisits: 2,
+          labServices: 1
+        }),
+        person("Hijo", "dependiente", 19, {
+          observationVisits: 1,
+          screening: true
+        })
+      ];
+      renderPeople();
+    }
+
+    controls.coverage.addEventListener("change", () => {
+      setCoveragePeople(controls.coverage.value);
+    });
+    controls.rateAge.addEventListener("input", calculate);
+    controls.plan.addEventListener("change", () => {
+      updateEnhancedVisibility();
+      calculate();
+    });
+    controls.admission.addEventListener("change", calculate);
+    controls.addPerson.addEventListener("click", () => {
+      if (state.people.length >= 6) return;
+      state.people.push(person(`Dependiente ${state.people.filter((item) => item.relation === "dependiente").length + 1}`, "dependiente", 12));
+      renderPeople();
+    });
+    controls.individualExample.addEventListener("click", loadIndividualExample);
+    controls.familyExample.addEventListener("click", loadFamilyExample);
+
+    loadIndividualExample();
+  })();
+</script>
+</body>
+</html>

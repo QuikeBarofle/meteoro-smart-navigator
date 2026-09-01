@@ -1,0 +1,16 @@
+METEORO SMART NAVIGATOR v0.2.4
+
+CAMBIOS
+- Critical Illness: hoja de tarifas Florida EXP 07/26 incorporada.
+- 3 planes cargados: Básico, Mejorado, Mejorado Plus.
+- Mejorado Plus predeterminado.
+- Monto nominal default $20,000; selector $5,000-$100,000.
+- Tarifa depende de edad titular, fumador, composición y modalidad tarifaria.
+- Composición Individual/Padre+Hijos usa columna Asegurado (Hijos gratuitos).
+- Pareja/Familiar usa columna Asegurado + Cónyuge o Familia.
+- Celdas en blanco no se estiman.
+- PDF de precios copiado a docs/Critical_Illness_Precios_FL.pdf.
+
+PRUEBA DE CONTROL ESPERADA
+Plan Mejorado Plus / $20,000 / edad 40 / Individual / No fumador / Asegurado activo en el trabajo => $25.13/mes.
+Plan Mejorado Plus / $20,000 / edad 40 / Pareja o Familiar / No fumador / Asegurado activo en el trabajo => $37.59/mes.
