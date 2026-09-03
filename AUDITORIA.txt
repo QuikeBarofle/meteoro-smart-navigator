@@ -1,16 +1,33 @@
-METEORO SMART NAVIGATOR v0.2.4
+METEORO SMART NAVIGATOR v0.3.9 · AUDITORÍA DE CAMBIOS
+Fecha: 2026-09-03
 
-CAMBIOS
-- Critical Illness: hoja de tarifas Florida EXP 07/26 incorporada.
-- 3 planes cargados: Básico, Mejorado, Mejorado Plus.
-- Mejorado Plus predeterminado.
-- Monto nominal default $20,000; selector $5,000-$100,000.
-- Tarifa depende de edad titular, fumador, composición y modalidad tarifaria.
-- Composición Individual/Padre+Hijos usa columna Asegurado (Hijos gratuitos).
-- Pareja/Familiar usa columna Asegurado + Cónyuge o Familia.
-- Celdas en blanco no se estiman.
-- PDF de precios copiado a docs/Critical_Illness_Precios_FL.pdf.
+INCLUYE TODO v0.3.8 MÁS:
+- Centro de Seguimientos con conteos: vencidos, hoy, próximos 7 días y activos sin fecha.
+- Vista de control por agente para ADMIN.
+- Badge de seguimientos urgentes en la pestaña 🔔 Seguimientos.
+- Web Push opt-in por dispositivo para agentes.
+- Avisos sin datos sensibles: solo cantidad de seguimientos pendientes.
+- Deep link desde la notificación a Centro de Seguimientos.
+- Botones Activar, Probar y Desactivar avisos.
+- Guía PWA actualizada: después de instalar, activar avisos desde 🔔 Seguimientos.
+- Service Worker v039 con eventos push y notificationclick.
+- Manifest con acceso rápido a Seguimientos.
 
-PRUEBA DE CONTROL ESPERADA
-Plan Mejorado Plus / $20,000 / edad 40 / Individual / No fumador / Asegurado activo en el trabajo => $25.13/mes.
-Plan Mejorado Plus / $20,000 / edad 40 / Pareja o Familiar / No fumador / Asegurado activo en el trabajo => $37.59/mes.
+BACKEND SUPABASE:
+- Edge Function meteoro-push v1.
+- Tablas meteoro_push_subscriptions y meteoro_push_notifications.
+- Configuración VAPID guardada fuera del frontend.
+- Cron cada 15 minutos para revisar seguimientos vencidos.
+- Prueba del endpoint cron: HTTP 200, sin leads vencidos al momento de la prueba.
+
+REGLAS:
+- iPhone/iPad: Web Push requiere Meteoro instalado en pantalla de inicio y permiso explícito del usuario.
+- Cada apertura/recarga de Meteoro sigue pidiendo usuario y contraseña.
+- Términos solo se muestran si la cuenta no ha aceptado la versión vigente.
+- Un agente ve sus leads; ADMIN ve todos.
+- Los avisos no muestran nombres, teléfonos, diagnósticos ni datos bancarios.
+
+VALIDACIONES LOCALES:
+- JavaScript principal: node --check OK.
+- service-worker.js: node --check OK.
+- manifest.webmanifest: JSON válido.
