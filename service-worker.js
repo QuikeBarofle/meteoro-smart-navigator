@@ -1,4 +1,5 @@
-const CACHE_NAME = 'meteoro-shell-v041';
+const CACHE_NAME = 'meteoro-shell-v042';
+const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const SHELL = [
   './',
   './index.html',
@@ -13,7 +14,8 @@ const SHELL = [
   './assets/meteoro-guide-1.png',
   './assets/meteoro-guide-2.png',
   './assets/meteoro-guide-3.png',
-  './assets/meteoro-guide-4.png'
+  './assets/meteoro-guide-4.png',
+  LAYOUT_SCRIPT
 ];
 
 self.addEventListener('install', event => {
@@ -27,6 +29,29 @@ self.addEventListener('activate', event => {
   );
 });
 
+function isNavigatorPage(url){
+  const p=url.pathname.replace(/\/+$/,'/');
+  return p.endsWith('/meteoro-smart-navigator/') || p.endsWith('/meteoro-smart-navigator/index.html');
+}
+
+async function injectNavigatorLayout(req){
+  const res=await fetch(req,{cache:'no-store'});
+  if(!res.ok) return res;
+  const type=(res.headers.get('content-type')||'').toLowerCase();
+  if(!type.includes('text/html')) return res;
+  let html=await res.text();
+  if(!html.includes('meteoro-layout-v042.js')){
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=42"></script></body>');
+  }
+  const headers=new Headers(res.headers);
+  headers.set('content-type','text/html; charset=utf-8');
+  headers.set('cache-control','no-cache');
+  const out=new Response(html,{status:res.status,statusText:res.statusText,headers});
+  const cache=await caches.open(CACHE_NAME);
+  await cache.put(req,out.clone());
+  return out;
+}
+
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
@@ -34,17 +59,34 @@ self.addEventListener('fetch', event => {
   if (url.origin !== self.location.origin) return;
 
   if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req).then(res => {
-        const copy = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
-        return res;
-      }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
-    );
+    if(isNavigatorPage(url)){
+      event.respondWith(
+        injectNavigatorLayout(req).catch(() =>
+          caches.match(req).then(r => r || caches.match('./index.html'))
+        )
+      );
+    } else {
+      event.respondWith(
+        fetch(req).then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(req, copy));
+          return res;
+        }).catch(() => caches.match(req).then(r => r || caches.match('./index.html')))
+      );
+    }
     return;
   }
 
   if (url.pathname.toLowerCase().endsWith('.pdf') || url.pathname.toLowerCase().endsWith('.pptx')) return;
+
+  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js')){
+    event.respondWith(fetch(req,{cache:'no-store'}).then(res => {
+      const copy=res.clone();
+      caches.open(CACHE_NAME).then(cache => cache.put(req,copy));
+      return res;
+    }).catch(() => caches.match(req)));
+    return;
+  }
 
   event.respondWith(
     caches.match(req).then(cached => cached || fetch(req).then(res => {
