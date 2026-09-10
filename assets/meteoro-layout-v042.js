@@ -22,6 +22,11 @@
       if(btn) nav.appendChild(btn);
     });
 
+    var style=document.createElement('style');
+    style.id='meteoroV042LayoutStyle';
+    style.textContent='.case-sub-nav{display:flex;justify-content:flex-end;margin:0 0 8px}.case-sub-nav button{min-height:34px;padding:7px 10px}.case-hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:620px){.case-hub-grid{grid-template-columns:1fr}}';
+    document.head.appendChild(style);
+
     // Leads y Seguimientos dejan de ocupar pestañas principales, pero conservan toda su lógica existente.
     var leadsTab=nav.querySelector('.tab[data-target="leadsPanel"]');
     var followTab=nav.querySelector('.tab[data-target="followupsPanel"]');
@@ -44,6 +49,17 @@
       if(panel){
         mount.appendChild(panel);
         panel.style.marginTop='16px';
+        if(!panel.querySelector('.case-sub-nav')){
+          var back=document.createElement('div');
+          back.className='case-sub-nav';
+          back.innerHTML='<button type="button" class="btn ghost">↑ OCULTAR Y VOLVER AL CASO</button>';
+          panel.insertBefore(back,panel.firstChild);
+          back.querySelector('button').addEventListener('click',function(){
+            closeEmbedded();
+            var a=document.getElementById('analyzeBtn');
+            if(a) a.scrollIntoView({behavior:'smooth',block:'center'});
+          });
+        }
       }
     });
 
@@ -79,7 +95,7 @@
       hub.innerHTML='\
         <div style="margin-top:12px;padding:12px;border:1px solid #d8e1e8;border-radius:14px;background:#f8fbfc">\
           <div style="font-size:11px;font-weight:900;color:#46545f;margin-bottom:8px">GESTIÓN DEL CASO</div>\
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">\
+          <div class="case-hub-grid">\
             <button type="button" id="openCaseLeads" class="btn secondary">📋 LEADS</button>\
             <button type="button" id="openCaseFollowups" class="btn secondary">🔔 CENTRO DE SEGUIMIENTO</button>\
           </div>\
@@ -88,6 +104,8 @@
       actionRow.insertAdjacentElement('afterend',hub);
       document.getElementById('openCaseLeads').addEventListener('click',function(){openEmbedded('leads')});
       document.getElementById('openCaseFollowups').addEventListener('click',function(){openEmbedded('followups')});
+      var badge=document.getElementById('followBadge');
+      if(badge) document.getElementById('openCaseFollowups').appendChild(badge);
     }
 
     // El acceso principal pasa a ser por pestañas; se eliminan botones flotantes redundantes.
@@ -109,19 +127,17 @@
     var version=document.querySelector('.version');
     if(version) version.textContent='v0.4.2 · PWA · Navigator · Cindy · Leads integrados';
 
-    // Si una notificación antigua abre ?open=followups, mantener la experiencia dentro de Nuevo caso.
+    // Si una notificación abre ?open=followups, mantener la experiencia dentro de Nuevo caso.
     try{
       var params=new URLSearchParams(location.search);
       if(params.get('open')==='followups') setTimeout(function(){openEmbedded('followups')},250);
       if(params.get('open')==='leads') setTimeout(function(){openEmbedded('leads')},250);
     }catch(e){}
 
-    // Cuando el usuario cambia a otra pestaña principal, ocultar los submódulos incrustados.
+    // Cualquier pestaña principal cierra primero el submódulo incrustado.
     nav.querySelectorAll('.tab').forEach(function(btn){
       if(btn===leadsTab||btn===followTab) return;
-      btn.addEventListener('click',function(){
-        if(btn.getAttribute('data-target')!=='casePanel') closeEmbedded();
-      });
+      btn.addEventListener('click',function(){closeEmbedded();});
     });
   });
 })();
