@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v039';
+const CACHE_NAME = 'meteoro-shell-v041';
 const SHELL = [
   './',
   './index.html',

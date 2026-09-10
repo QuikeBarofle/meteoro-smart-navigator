@@ -1,3 +1,24 @@
+METEORO SMART NAVIGATOR v0.4.1 · AUDITORÍA DE CAMBIOS
+Fecha: 2026-09-10
+
+INCLUYE TODO v0.3.9 MÁS:
+- Cindy documental conectada a meteoro-cindy usando la sesión existente de Meteoro.
+- Respaldo automático con el motor local si el servicio documental no responde.
+- Botón visible 🎓 KIRA · ENTRENAMIENTO solo después de autenticarse.
+- Kira se abre dentro de Meteoro mediante su interfaz existente y diseño adaptable.
+- Service Worker v041 para invalidar la caché anterior y entregar la nueva versión.
+- Sin cambios a productos, tarifas, reglas, beneficios, directorios, portales, administración, Leads ni autenticación.
+
+VALIDACIONES v0.4.1:
+- JavaScript principal y Kira: node --check OK.
+- service-worker.js: node --check OK.
+- manifest.webmanifest: JSON válido.
+- Endpoints de autenticación, Cindy y Kira protegidos: respuesta HTTP 405 sin método/token válido.
+- Kira UI: HTTP 200 y sin cabeceras que impidan su apertura dentro del iframe.
+- Reglas móviles específicas conservadas; Kira ocupa la pantalla completa a 700 px o menos.
+
+HISTORIAL CONSERVADO
+-------------------
 METEORO SMART NAVIGATOR v0.3.9 · AUDITORÍA DE CAMBIOS
 Fecha: 2026-09-03
 
