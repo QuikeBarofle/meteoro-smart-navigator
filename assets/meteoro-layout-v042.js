@@ -21,6 +21,9 @@
       var btn=nav.querySelector('.tab[data-target="'+target+'"]');
       if(btn) nav.appendChild(btn);
     });
+    var kiraNav=nav.querySelector('#kiraNavBtn');
+    var cindyTab=nav.querySelector('.tab[data-target="cindyPanel"]');
+    if(kiraNav&&cindyTab) cindyTab.insertAdjacentElement('afterend',kiraNav);
 
     var style=document.createElement('style');
     style.id='meteoroV042LayoutStyle';
@@ -108,13 +111,7 @@
       if(badge) document.getElementById('openCaseFollowups').appendChild(badge);
     }
 
-    // El acceso principal pasa a ser por pestañas; se eliminan botones flotantes redundantes.
-    var kiraLauncher=document.getElementById('kiraLauncher');
-    if(kiraLauncher) kiraLauncher.remove();
-    var kiraOverlay=document.getElementById('kiraOverlay');
-    if(kiraOverlay) kiraOverlay.remove();
-    var cindyFloat=document.getElementById('cindyFloat');
-    if(cindyFloat) cindyFloat.style.display='none';
+    // Cindy y Kira viven en la navegación principal; no se generan accesos flotantes.
 
     // Pie legal solicitado por el propietario.
     var footer=document.querySelector('footer');

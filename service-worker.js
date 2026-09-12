@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v042';
+const CACHE_NAME = 'meteoro-shell-v043';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const SHELL = [
   './',
@@ -41,7 +41,7 @@ async function injectNavigatorLayout(req){
   if(!type.includes('text/html')) return res;
   let html=await res.text();
   if(!html.includes('meteoro-layout-v042.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=42"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=43"></script></body>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
