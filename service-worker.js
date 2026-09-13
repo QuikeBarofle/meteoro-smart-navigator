@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v044b';
+const CACHE_NAME = 'meteoro-shell-v045';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
@@ -38,20 +38,61 @@ function isNavigatorPage(url){
   return p.endsWith('/meteoro-smart-navigator/') || p.endsWith('/meteoro-smart-navigator/index.html');
 }
 
+const CORE_BRIDGE = `
+/* __METEORO_CORE_BRIDGE_V045__ */
+(function(){
+  function bind(name,getter,setter){
+    try{Object.defineProperty(window,name,{configurable:true,enumerable:false,get:getter,set:setter||function(){}})}catch(e){try{window[name]=getter()}catch(_){}}
+  }
+  bind('currentAuthUser',function(){return currentAuthUser},function(v){currentAuthUser=v});
+  bind('currentAuthToken',function(){return currentAuthToken},function(v){currentAuthToken=v});
+  bind('PORTAL_DEFS',function(){return PORTAL_DEFS});
+  bind('products',function(){return products});
+  bind('productsById',function(){return productsById});
+  bind('quoteCoverageMode',function(){return quoteCoverageMode});
+  bind('quoteCoverageOptions',function(){return quoteCoverageOptions},function(v){quoteCoverageOptions=v});
+  bind('quoteEval',function(){return quoteEval},function(v){quoteEval=v});
+  bind('quoteCoverageModeLabel',function(){return quoteCoverageModeLabel},function(v){quoteCoverageModeLabel=v});
+  bind('renderQuotes',function(){return renderQuotes},function(v){renderQuotes=v});
+  bind('selectedQuoteSnapshot',function(){return selectedQuoteSnapshot},function(v){selectedQuoteSnapshot=v});
+  bind('effectivePermissions',function(){return effectivePermissions},function(v){effectivePermissions=v});
+  bind('portalAllowed',function(){return portalAllowed},function(v){portalAllowed=v});
+  bind('portalPermissionSummary',function(){return portalPermissionSummary},function(v){portalPermissionSummary=v});
+  bind('readNewPermissions',function(){return readNewPermissions},function(v){readNewPermissions=v});
+  bind('applyRoleVisibility',function(){return applyRoleVisibility},function(v){applyRoleVisibility=v});
+  bind('revealAuthorizedAppRemote',function(){return revealAuthorizedAppRemote},function(v){revealAuthorizedAppRemote=v});
+  bind('getCase',function(){return getCase});
+  bind('mk',function(){return mk});
+  bind('statusRank',function(){return statusRank});
+  bind('money',function(){return money});
+  bind('updateSelectedTotal',function(){return updateSelectedTotal});
+  bind('renderCommission',function(){return renderCommission});
+  bind('refreshCompanySelect',function(){return refreshCompanySelect});
+  bind('apiCall',function(){return apiCall});
+  bind('loadRemoteUsers',function(){return loadRemoteUsers});
+  bind('loadRemoteAudit',function(){return loadRemoteAudit});
+})();
+`;
+
 async function injectNavigatorLayout(req){
   const res=await fetch(req,{cache:'no-store'});
   if(!res.ok) return res;
   const type=(res.headers.get('content-type')||'').toLowerCase();
   if(!type.includes('text/html')) return res;
   let html=await res.text();
+
+  const startMarker='function startApp(){registerMeteoroPwa();initAuthGate()}';
+  if(!html.includes('__METEORO_CORE_BRIDGE_V045__') && html.includes(startMarker)){
+    html=html.replace(startMarker,CORE_BRIDGE+'\n'+startMarker);
+  }
   if(!html.includes('meteoro-layout-v042.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=44"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=45"></script></body>');
   }
   if(!html.includes('meteoro-enhancements-v044.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=44"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=45"></script></body>');
   }
   if(!html.includes('meteoro-v044-fix.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=44"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=45"></script></body>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
