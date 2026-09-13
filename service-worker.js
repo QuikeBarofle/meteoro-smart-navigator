@@ -1,6 +1,7 @@
-const CACHE_NAME = 'meteoro-shell-v044';
+const CACHE_NAME = 'meteoro-shell-v044b';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
+const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
 const SHELL = [
   './',
   './index.html',
@@ -17,7 +18,8 @@ const SHELL = [
   './assets/meteoro-guide-3.png',
   './assets/meteoro-guide-4.png',
   LAYOUT_SCRIPT,
-  ENHANCEMENT_SCRIPT
+  ENHANCEMENT_SCRIPT,
+  FIX_SCRIPT
 ];
 
 self.addEventListener('install', event => {
@@ -47,6 +49,9 @@ async function injectNavigatorLayout(req){
   }
   if(!html.includes('meteoro-enhancements-v044.js')){
     html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=44"></script></body>');
+  }
+  if(!html.includes('meteoro-v044-fix.js')){
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=44"></script></body>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
@@ -84,7 +89,7 @@ self.addEventListener('fetch', event => {
 
   if (url.pathname.toLowerCase().endsWith('.pdf') || url.pathname.toLowerCase().endsWith('.pptx')) return;
 
-  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js')){
+  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js') || url.pathname.endsWith('/assets/meteoro-v044-fix.js')){
     event.respondWith(fetch(req,{cache:'no-store'}).then(res => {
       const copy=res.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(req,copy));
