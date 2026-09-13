@@ -1,6 +1,30 @@
 (function(){
   'use strict';
 
+  // v0.4.5 · Asegura que incluso un navegador nuevo quede bajo el Service Worker
+  // antes de usar el cotizador avanzado. Una sola recarga automática por pestaña.
+  (function ensureLatestWorker(){
+    if(!('serviceWorker' in navigator)) return;
+    var reloadKey='meteoro_sw_bridge_v045';
+    var reloading=false;
+    function reloadOnce(){
+      if(reloading) return;
+      try{
+        if(sessionStorage.getItem(reloadKey)==='1') return;
+        sessionStorage.setItem(reloadKey,'1');
+      }catch(e){}
+      reloading=true;
+      location.reload();
+    }
+    navigator.serviceWorker.addEventListener('controllerchange',reloadOnce);
+    navigator.serviceWorker.register('./service-worker.js').then(function(reg){
+      try{reg.update()}catch(e){}
+      if(!navigator.serviceWorker.controller){
+        navigator.serviceWorker.ready.then(reloadOnce).catch(function(){});
+      }
+    }).catch(function(){});
+  })();
+
   function ready(fn){
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fn,{once:true});
     else fn();
@@ -119,7 +143,7 @@
       footer.innerHTML='<b>METEORO SMART NAVIGATOR</b> · Guía de entrenamiento personalizada y herramienta privada de apoyo. <b>Propietario: Carlos Barona.</b> © 2026 Carlos Barona. Todos los derechos reservados. Prohibida la copia, reproducción, distribución, venta, negociación, cesión o explotación comercial total o parcial sin autorización expresa de Carlos Barona. Los materiales oficiales de terceros pertenecen a sus respectivos titulares.';
     }
 
-    // Identificación visible de la revisión sin alterar el motor, datos ni reglas existentes.
+    // La revisión final la sobreescribe v0.4.4/v0.4.5 cuando el bridge está activo.
     document.title='Meteoro Smart Navigator – Florida v0.4.2';
     var version=document.querySelector('.version');
     if(version) version.textContent='v0.4.2 · PWA · Navigator · Cindy · Leads integrados';
