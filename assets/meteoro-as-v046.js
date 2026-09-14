@@ -1,7 +1,6 @@
 (function(){'use strict';
 var REL='v0.4.6';
 function E(id){return document.getElementById(id)}
-function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function arr(v){return Array.isArray(v)?v:[]}
 
 function patchAsProduct(){
@@ -9,26 +8,32 @@ function patchAsProduct(){
   if(!as)return;
   for(var i=ps.length-1;i>=0;i--){if(ps[i]&&ps[i].id==='ss-as')ps.splice(i,1)}
   map['ss-as']=as; // alias de compatibilidad: no crea una segunda tarjeta.
-  as.family='Signature · iPad / Agent Connect';
+  as.family='Signature';
   as.channel='📱 iPad + 🌐 Agent Connect · misma póliza';
-  as.verified='Brochure FL Form 12950-FL + tarifa CEB 2025. Misma póliza en iPad y Agent Connect; cierre 25/09/2026 es regla operacional.';
-  as.age='Adultos 18–64 · hijos: 23 años como regla operacional pendiente de confirmar en Rider 12954-FL';
+  as.source='Form 12950-FL · Brochure 1501002-FL-S EXP 07/26 · Riders 12951–12954-FL';
+  as.verified='Brochure oficial de Florida + tarifa CEB 2025. Misma póliza en iPad y Agent Connect; cierre 25/09/2026 es regla operacional.';
+  as.age='Adultos 18–64 · hijos/nietos dependientes hasta 26 años';
   as.compositions='Individual · Pareja · Padre/Madre + hijos · Familiar';
   if(!as.__v046Notes){
     as.notes=arr(as.notes).concat([
       'Canales de venta: iPad y Agent Connect. Es una sola póliza; no se duplica en el Navigator.',
+      'Cobertura familiar verificada en brochure FL: hijos y nietos dependientes hasta los 26 años; cubiertos sin costo adicional.',
+      'El brochure no establece un número máximo de hijos/nietos. Meteoro no impone una regla de “máximo 3” sin fuente contractual.',
       'Acumulación máxima permitida en Meteoro: Choice. Equivalencias operativas: 2 Base = Standard; 4 Base = Choice; 2 Standard = Choice. Si ya existe Choice, no agregar Base, Standard ni otro Choice.',
-      'Hijos: el brochure FL CI-ASHIP-LVB-FL-S_1224 menciona el Rider 12954-FL pero no publica la edad máxima ni un límite de cantidad. La guía operativa interna usa 23 años; hasta obtener el Rider 12954-FL, edades mayores de 23 se marcan REQUIERE REVISIÓN y no se rechazan automáticamente.',
       'Recuperación tras hospitalización: requiere internación cubierta. Meteoro modela mínimo 10 días y tope acumulado igual a los días de hospitalización cuando la internación supera 10 días. Puede modelar pagos parciales sin exceder el tope acumulado; la adjudicación final corresponde a Claims.'
     ]);
     var oldEval=as.evaluate;
     as.evaluate=function(c){
-      var r=oldEval.call(as,c), kids=arr(c&&c.children), over23=kids.filter(function(a){return Number(a)>23});
-      if(over23.length&&r.status!=='no'){
+      var r=oldEval.call(as,c), kids=arr(c&&c.children), over26=kids.filter(function(a){return Number(a)>26});
+      if(over26.length&&r.status!=='no'){
         if(r.status==='ok')r.status='review';
-        r.reason=(r.reason||'')+' Hijo(s) de '+over23.join(', ')+' años: la guía operacional interna usa 23 años, pero el brochure de Florida no publica la edad máxima. Confirmar el Rider 12954-FL antes de determinar elegibilidad.';
+        if(c&&c.disabledDependent){
+          r.reason=(r.reason||'')+' Dependiente(s) mayor(es) de 26 años ('+over26.join(', ')+'): el brochure revisado solo confirma hijos/nietos dependientes hasta 26. La casilla de dependiente incapacitado requiere validación contractual antes de incluirlos en A&S.';
+        }else{
+          r.reason=(r.reason||'')+' Hijo(s)/nieto(s) de '+over26.join(', ')+' años no caben como dependientes en la cobertura familiar documentada (máximo 26). Si tienen 18–64, pueden evaluarse por separado como adultos según reglas de emisión.';
+        }
       }
-      if(kids.length)r.reason=(r.reason||'')+' El brochure cargado no establece un máximo de hijos; Meteoro no aplica una regla de “máximo 3” sin fuente contractual.';
+      if(kids.length)r.reason=(r.reason||'')+' El brochure no publica un máximo numérico de hijos/nietos; no se aplica una regla de “máximo 3”.';
       return r;
     };
     as.__v046Notes=true;
@@ -58,14 +63,34 @@ function decorateAsControls(){
 
 function addChildSourceNotice(){
   var wrap=E('childrenWrap');if(!wrap||E('asChildSourceNotice'))return;
-  var n=document.createElement('div');n.id='asChildSourceNotice';n.className='callout warning';n.style.marginTop='8px';
-  n.innerHTML='<b>A&S · hijos:</b> la guía operativa interna usa <b>hasta 23 años</b>. El brochure FL vigente cargado menciona el Rider de Hijos 12954-FL, pero <b>no publica en el brochure la edad máxima ni un máximo de cantidad</b>. Por eso Meteoro no inventa “3 hijos” ni convierte automáticamente 24–26 años en NO ELEGIBLE; lo marca para revisión hasta confirmar el Rider 12954-FL. Los 5 campos visibles son capacidad actual de captura, no un límite contractual.';
+  var n=document.createElement('div');n.id='asChildSourceNotice';n.className='callout success-note';n.style.marginTop='8px';
+  n.innerHTML='<b>A&S · hijos/nietos VERIFICADO:</b> el brochure de Florida 1501002-FL-S (EXP 07/26) confirma dependientes <b>hasta los 26 años</b> y señala que hijos y nietos están cubiertos sin costo adicional. El brochure <b>no establece un máximo numérico de hijos</b>; Meteoro no usa una regla de “máximo 3”.';
   wrap.appendChild(n);
+}
+
+var baseGetCase=null,extraCount=5;
+function extraChildren(prefix){
+  var out=[];document.querySelectorAll('input[data-extra-child="'+prefix+'"]').forEach(function(x){if(x.value!==''){var n=Number(x.value);if(Number.isFinite(n)&&n>=0)out.push(n)}});return out;
+}
+function patchDynamicChildren(){
+  if(typeof window.getCase==='function'&&!baseGetCase){
+    baseGetCase=window.getCase;
+    window.getCase=function(){var c=baseGetCase();c.children=arr(c.children).concat(extraChildren('case'));return c};
+  }
+  var wrap=E('childrenWrap'),qwrap=E('qChildrenWrap');if(!wrap||E('addAsChildBtn'))return;
+  var b=document.createElement('button');b.type='button';b.id='addAsChildBtn';b.className='btn ghost';b.style.marginTop='8px';b.textContent='+ AGREGAR OTRO HIJO / NIETO';wrap.appendChild(b);
+  b.addEventListener('click',function(){extraCount++;addChildPair(extraCount);});
+  if(qwrap&&!E('qAddAsChildBtn')){var qb=b.cloneNode(true);qb.id='qAddAsChildBtn';qwrap.insertAdjacentElement('afterend',qb);qb.addEventListener('click',function(){extraCount++;addChildPair(extraCount);});}
+}
+function addChildPair(i){
+  var g=E('childrenWrap')&&E('childrenWrap').querySelector('.child-age-grid'),qg=E('qChildrenWrap');
+  if(g&&!E('childAge'+i)){var d=document.createElement('div');d.innerHTML='<label>Hijo/Nieto '+i+'</label><input id="childAge'+i+'" data-extra-child="case" type="number" min="0" max="120" placeholder="Edad">';g.appendChild(d);d.querySelector('input').addEventListener('change',function(){var q=E('qChildAge'+i);if(q)q.value=this.value});}
+  if(qg&&!E('qChildAge'+i)){var qd=document.createElement('div');qd.innerHTML='<label>Hijo/Nieto '+i+'</label><input id="qChildAge'+i+'" data-extra-child="quote" type="number" min="0" max="120" placeholder="Edad">';qg.appendChild(qd);qd.querySelector('input').addEventListener('change',function(){var x=E('childAge'+i);if(x)x.value=this.value;if(typeof window.renderQuotes==='function')window.renderQuotes()});}
 }
 
 function addRecoveryPartialField(){
   if(E('eventAsRecoveryPaid'))return;
-  var rec=E('eventRecoveryDays');if(!rec)return;var parent=rec.parentElement,box=parent&&parent.parentElement;if(!box)return;
+  var rec=E('eventRecoveryDays');if(!rec)return;var parent=rec.parentElement;if(!parent)return;
   var d=document.createElement('div');d.id='eventAsRecoveryPaidWrap';d.innerHTML='<label>A&S · días de recuperación ya pagados</label><input id="eventAsRecoveryPaid" type="number" min="0" max="365" value="0"><small style="display:block;margin-top:4px;color:#66737f;font-size:9px">Úsalo para una reclamación parcial o una extensión posterior.</small>';
   parent.insertAdjacentElement('afterend',d);
   var sec=parent.closest('.sim-section');if(sec&&!E('asRecoveryRuleNotice')){
@@ -105,15 +130,12 @@ function patchAsRecovery(){
   layer.__asV046=true;window.simpleLayerAmount=layer;
 }
 
-function brand(){document.title='Meteoro Smart Navigator – Florida '+REL;var v=document.querySelector('.version');if(v)v.textContent=REL+' · A&S unificada · recuperación parcial · multi-miembro'}
-function refresh(){patchAsProduct();addAsChannelNotice();addChildSourceNotice();addRecoveryPartialField();patchAsRecovery();decorateAsControls();brand()}
+function brand(){document.title='Meteoro Smart Navigator – Florida '+REL;var v=document.querySelector('.version');if(v)v.textContent=REL+' · A&S unificada · dependientes 0–26 · recuperación parcial'}
+function refresh(){patchAsProduct();addAsChannelNotice();addChildSourceNotice();patchDynamicChildren();addRecoveryPartialField();patchAsRecovery();decorateAsControls();brand()}
 function boot(){
-  refresh();setTimeout(refresh,300);setTimeout(function(){
-    if(typeof window.renderQuotes==='function')window.renderQuotes();
-    if(typeof window.renderProducts==='function')window.renderProducts('all');
-  },550);
+  refresh();setTimeout(refresh,300);setTimeout(function(){if(typeof window.renderQuotes==='function')window.renderQuotes();if(typeof window.renderProducts==='function')window.renderProducts('all')},550);
   var q=E('quoteGrid');if(q&&window.MutationObserver)new MutationObserver(function(){decorateAsControls()}).observe(q,{childList:true,subtree:true});
-  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.training-preset')){var x=E('eventAsRecoveryPaid');if(x)x.value='0'}},true);
+  document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.training-preset')){var x=E('eventAsRecoveryPaid');if(x)x.value='0'}if(e.target.closest&&e.target.closest('#clearBtn')){setTimeout(function(){document.querySelectorAll('input[data-extra-child]').forEach(function(x){x.value=''})},0)}},true);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
