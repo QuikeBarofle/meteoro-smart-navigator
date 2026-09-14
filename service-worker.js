@@ -1,7 +1,8 @@
-const CACHE_NAME = 'meteoro-shell-v045';
+const CACHE_NAME = 'meteoro-shell-v046';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
+const AS_SCRIPT = './assets/meteoro-as-v046.js';
 const SHELL = [
   './',
   './index.html',
@@ -19,7 +20,8 @@ const SHELL = [
   './assets/meteoro-guide-4.png',
   LAYOUT_SCRIPT,
   ENHANCEMENT_SCRIPT,
-  FIX_SCRIPT
+  FIX_SCRIPT,
+  AS_SCRIPT
 ];
 
 self.addEventListener('install', event => {
@@ -39,7 +41,7 @@ function isNavigatorPage(url){
 }
 
 const CORE_BRIDGE = `
-/* __METEORO_CORE_BRIDGE_V045__ */
+/* __METEORO_CORE_BRIDGE_V046__ */
 (function(){
   function bind(name,getter,setter){
     try{Object.defineProperty(window,name,{configurable:true,enumerable:false,get:getter,set:setter||function(){}})}catch(e){try{window[name]=getter()}catch(_){}}
@@ -54,14 +56,18 @@ const CORE_BRIDGE = `
   bind('quoteEval',function(){return quoteEval},function(v){quoteEval=v});
   bind('quoteCoverageModeLabel',function(){return quoteCoverageModeLabel},function(v){quoteCoverageModeLabel=v});
   bind('renderQuotes',function(){return renderQuotes},function(v){renderQuotes=v});
+  bind('renderProducts',function(){return renderProducts},function(v){renderProducts=v});
+  bind('renderPackages',function(){return renderPackages},function(v){renderPackages=v});
+  bind('renderWellness',function(){return renderWellness},function(v){renderWellness=v});
   bind('selectedQuoteSnapshot',function(){return selectedQuoteSnapshot},function(v){selectedQuoteSnapshot=v});
+  bind('simpleLayerAmount',function(){return simpleLayerAmount},function(v){simpleLayerAmount=v});
   bind('effectivePermissions',function(){return effectivePermissions},function(v){effectivePermissions=v});
   bind('portalAllowed',function(){return portalAllowed},function(v){portalAllowed=v});
   bind('portalPermissionSummary',function(){return portalPermissionSummary},function(v){portalPermissionSummary=v});
   bind('readNewPermissions',function(){return readNewPermissions},function(v){readNewPermissions=v});
   bind('applyRoleVisibility',function(){return applyRoleVisibility},function(v){applyRoleVisibility=v});
   bind('revealAuthorizedAppRemote',function(){return revealAuthorizedAppRemote},function(v){revealAuthorizedAppRemote=v});
-  bind('getCase',function(){return getCase});
+  bind('getCase',function(){return getCase},function(v){getCase=v});
   bind('mk',function(){return mk});
   bind('statusRank',function(){return statusRank});
   bind('money',function(){return money});
@@ -82,17 +88,20 @@ async function injectNavigatorLayout(req){
   let html=await res.text();
 
   const startMarker='function startApp(){registerMeteoroPwa();initAuthGate()}';
-  if(!html.includes('__METEORO_CORE_BRIDGE_V045__') && html.includes(startMarker)){
+  if(!html.includes('__METEORO_CORE_BRIDGE_V046__') && html.includes(startMarker)){
     html=html.replace(startMarker,CORE_BRIDGE+'\n'+startMarker);
   }
   if(!html.includes('meteoro-layout-v042.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=45"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=46"></script></body>');
   }
   if(!html.includes('meteoro-enhancements-v044.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=45"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=46"></script></body>');
   }
   if(!html.includes('meteoro-v044-fix.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=45"></script></body>');
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=46"></script></body>');
+  }
+  if(!html.includes('meteoro-as-v046.js')){
+    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-as-v046.js?v=46"></script></body>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
@@ -130,7 +139,7 @@ self.addEventListener('fetch', event => {
 
   if (url.pathname.toLowerCase().endsWith('.pdf') || url.pathname.toLowerCase().endsWith('.pptx')) return;
 
-  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js') || url.pathname.endsWith('/assets/meteoro-v044-fix.js')){
+  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js') || url.pathname.endsWith('/assets/meteoro-v044-fix.js') || url.pathname.endsWith('/assets/meteoro-as-v046.js')){
     event.respondWith(fetch(req,{cache:'no-store'}).then(res => {
       const copy=res.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(req,copy));
