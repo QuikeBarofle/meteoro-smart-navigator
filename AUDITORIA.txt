@@ -23,6 +23,7 @@ RESPALDO:
 
 VALIDACIONES REALIZADAS:
 - JavaScript principal, Service Worker y módulos modificados: sintaxis OK.
+- La prueba del sitio público detectó y corrigió una inyección antigua del Service Worker dentro del HTML imprimible de Leads; los módulos ahora se insertan únicamente antes del cierre real de body, sin eliminar ni simplificar esa función.
 - Edge Function TypeScript: sintaxis OK y despliegue ACTIVE.
 - Solicitud con usuario inexistente y con agente: HTTP 200 con respuesta genérica; cero solicitudes creadas para no ADMIN.
 - Solicitud ADMIN: identidad de recuperación enlazada, estado email_sent y eventos registrados en auditoría.

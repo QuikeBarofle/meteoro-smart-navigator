@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v047';
+const CACHE_NAME = 'meteoro-shell-v047-hotfix1';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
@@ -91,17 +91,23 @@ async function injectNavigatorLayout(req){
   if(!html.includes('__METEORO_CORE_BRIDGE_V046__') && html.includes(startMarker)){
     html=html.replace(startMarker,CORE_BRIDGE+'\n'+startMarker);
   }
+  const injectBeforeClosingBody = markup => {
+    const closing='</body>';
+    const index=html.toLowerCase().lastIndexOf(closing);
+    if(index<0) return;
+    html=html.slice(0,index)+markup+html.slice(index);
+  };
   if(!html.includes('meteoro-layout-v042.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-layout-v042.js?v=47"></script></body>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-layout-v042.js?v=47"></script>');
   }
   if(!html.includes('meteoro-enhancements-v044.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-enhancements-v044.js?v=47"></script></body>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-enhancements-v044.js?v=47"></script>');
   }
   if(!html.includes('meteoro-v044-fix.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-v044-fix.js?v=47"></script></body>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-v044-fix.js?v=47"></script>');
   }
   if(!html.includes('meteoro-as-v046.js')){
-    html=html.replace(/<\/body>/i,'<script src="./assets/meteoro-as-v046.js?v=47"></script></body>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-as-v046.js?v=47"></script>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
