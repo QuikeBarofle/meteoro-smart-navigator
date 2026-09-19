@@ -1,6 +1,14 @@
 METEORO SMART NAVIGATOR v0.4.7 · RECUPERACIÓN SEGURA ADMIN
 Fecha: 2026-09-19
 
+HOTFIX 2 · BLOQUEO DE ESCRITURA EN LOGIN
+- Respaldo: backup-pre-login-freeze-20260919 desde 73f92e004cff85886b097018b7e506097f1c85b5.
+- El observador de quoteGrid en A&S reescribía sus propias opciones y notas, generando un bucle continuo de callbacks que bloqueaba la página antes de iniciar sesión.
+- Las opciones y notas solo se actualizan cuando cambian; el observador se desconecta durante su propia decoración y se reconecta después.
+- Se conservan niveles, equivalencias, selección del usuario y todas las funciones de A&S.
+- Caché PWA y URL del módulo actualizadas a hotfix2.
+- Prueba de regresión tools/check-login-loop.cjs: reproduce el bucle con el módulo anterior; con la corrección verifica foco de usuario, apertura/regreso de recuperación, estabilidad en reposo y conservación de Base/Standard/Choice tras renderizar.
+
 INCLUYE TODO LO EXISTENTE MÁS:
 - Enlace “Olvidé mi contraseña” en la pantalla inicial, identificado como exclusivo para ADMIN.
 - Recuperación habilitada únicamente para carlosebarona; los agentes continúan bajo creación y restablecimiento manual desde ADMIN.

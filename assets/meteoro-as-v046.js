@@ -50,14 +50,16 @@ function addAsChannelNotice(){
 
 function setAsOptions(s){
   if(!s)return;var val=String(s.value||'1');
-  s.innerHTML='<option value="0.5">Base · 1 Base</option><option value="1">Standard · 1 Standard / 2 Base</option><option value="2">Choice · 1 Choice / 2 Standard / 4 Base</option>';
+  var options='<option value="0.5">Base · 1 Base</option><option value="1">Standard · 1 Standard / 2 Base</option><option value="2">Choice · 1 Choice / 2 Standard / 4 Base</option>';
+  if(s.innerHTML!==options)s.innerHTML=options;
   if(['0.5','1','2'].indexOf(val)<0)val='1';s.value=val;
 }
 function decorateAsControls(){
   setAsOptions(E('asQuantity'));
   document.querySelectorAll('.quote-plan-control[data-field="asQuantity"]').forEach(function(s){
     setAsOptions(s);var box=s.closest('.quote-plan-box');if(!box)return;var note=box.querySelector('.quote-plan-note');
-    if(note)note.innerHTML='<b>TOPE MÁXIMO: CHOICE.</b> 2 Base = Standard · 4 Base = Choice · 2 Standard = Choice. Si el cliente ya tiene Choice, no se puede sumar Standard, Base ni otro Choice.';
+    var message='<b>TOPE MÁXIMO: CHOICE.</b> 2 Base = Standard · 4 Base = Choice · 2 Standard = Choice. Si el cliente ya tiene Choice, no se puede sumar Standard, Base ni otro Choice.';
+    if(note&&note.innerHTML!==message)note.innerHTML=message;
   });
 }
 
@@ -134,7 +136,16 @@ function brand(){document.title='Meteoro Smart Navigator – Florida '+REL;var v
 function refresh(){patchAsProduct();addAsChannelNotice();addChildSourceNotice();patchDynamicChildren();addRecoveryPartialField();patchAsRecovery();decorateAsControls();brand()}
 function boot(){
   refresh();setTimeout(refresh,300);setTimeout(function(){if(typeof window.renderQuotes==='function')window.renderQuotes();if(typeof window.renderProducts==='function')window.renderProducts('all')},550);
-  var q=E('quoteGrid');if(q&&window.MutationObserver)new MutationObserver(function(){decorateAsControls()}).observe(q,{childList:true,subtree:true});
+  var q=E('quoteGrid');
+  if(q&&window.MutationObserver){
+    // The decorator changes this same subtree. Do not observe our own writes:
+    // they otherwise queue callbacks forever and block typing throughout the app.
+    var observer=new MutationObserver(function(){
+      observer.disconnect();
+      try{decorateAsControls()}finally{observer.observe(q,{childList:true,subtree:true})}
+    });
+    observer.observe(q,{childList:true,subtree:true});
+  }
   document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('.training-preset')){var x=E('eventAsRecoveryPaid');if(x)x.value='0'}if(e.target.closest&&e.target.closest('#clearBtn')){setTimeout(function(){document.querySelectorAll('input[data-extra-child]').forEach(function(x){x.value=''})},0)}},true);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();

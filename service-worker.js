@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v047-hotfix1';
+const CACHE_NAME = 'meteoro-shell-v047-hotfix2';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
@@ -107,7 +107,7 @@ async function injectNavigatorLayout(req){
     injectBeforeClosingBody('<script src="./assets/meteoro-v044-fix.js?v=47"></script>');
   }
   if(!html.includes('meteoro-as-v046.js')){
-    injectBeforeClosingBody('<script src="./assets/meteoro-as-v046.js?v=47"></script>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-as-v046.js?v=47-hotfix2"></script>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
