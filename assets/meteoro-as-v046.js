@@ -1,5 +1,5 @@
 (function(){'use strict';
-var REL='v0.4.6';
+var REL='v0.4.7';
 function E(id){return document.getElementById(id)}
 function arr(v){return Array.isArray(v)?v:[]}
 
@@ -130,7 +130,7 @@ function patchAsRecovery(){
   layer.__asV046=true;window.simpleLayerAmount=layer;
 }
 
-function brand(){document.title='Meteoro Smart Navigator – Florida '+REL;var v=document.querySelector('.version');if(v)v.textContent=REL+' · A&S unificada · dependientes 0–26 · recuperación parcial'}
+function brand(){document.title='Meteoro Smart Navigator – Florida '+REL;var v=document.querySelector('.version');if(v)v.textContent=REL+' · recuperación ADMIN · A&S unificada'}
 function refresh(){patchAsProduct();addAsChannelNotice();addChildSourceNotice();patchDynamicChildren();addRecoveryPartialField();patchAsRecovery();decorateAsControls();brand()}
 function boot(){
   refresh();setTimeout(refresh,300);setTimeout(function(){if(typeof window.renderQuotes==='function')window.renderQuotes();if(typeof window.renderProducts==='function')window.renderProducts('all')},550);

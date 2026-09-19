@@ -1,3 +1,36 @@
+METEORO SMART NAVIGATOR v0.4.7 · RECUPERACIÓN SEGURA ADMIN
+Fecha: 2026-09-19
+
+INCLUYE TODO LO EXISTENTE MÁS:
+- Enlace “Olvidé mi contraseña” en la pantalla inicial, identificado como exclusivo para ADMIN.
+- Recuperación habilitada únicamente para carlosebarona; los agentes continúan bajo creación y restablecimiento manual desde ADMIN.
+- Correo de recuperación guardado solo en la cuenta administrativa principal.
+- Enlace gestionado por Supabase Auth: aleatorio, de un solo uso y nunca contiene ni envía la contraseña.
+- Vigencia adicional de Meteoro: 30 minutos.
+- Pantalla para crear y confirmar la nueva contraseña después de abrir el enlace.
+- Revocación de sesiones Meteoro al completar el cambio.
+- Auditoría de solicitud, envío, finalización y fallos sin registrar contraseñas ni tokens en texto visible.
+- La respuesta del formulario es idéntica para usuarios válidos, inexistentes o no autorizados.
+
+BACKEND SUPABASE:
+- Migración create_admin_password_recovery.
+- Tabla meteoro_password_recovery con RLS, sin acceso anon/authenticated y almacenamiento exclusivo del hash del token intercambiado.
+- Restricción de base de datos que impide asignar recovery_email a cuentas distintas de carlosebarona ADMIN.
+- Edge Function meteoro-auth v9.
+
+RESPALDO:
+- Rama backup-pre-admin-recovery-20260919 creada desde main en 89f1b46cc226125d4ee7a9a766f4eab2095f1a79.
+
+VALIDACIONES REALIZADAS:
+- JavaScript principal, Service Worker y módulos modificados: sintaxis OK.
+- Edge Function TypeScript: sintaxis OK y despliegue ACTIVE.
+- Solicitud con usuario inexistente y con agente: HTTP 200 con respuesta genérica; cero solicitudes creadas para no ADMIN.
+- Solicitud ADMIN: identidad de recuperación enlazada, estado email_sent y eventos registrados en auditoría.
+- Finalización con token inválido: HTTP 400, sin cambiar contraseña ni sesiones.
+- Pendiente de validación humana final: abrir el correo, establecer la nueva contraseña y confirmar el inicio de sesión real.
+
+HISTORIAL CONSERVADO
+-------------------
 METEORO SMART NAVIGATOR v0.4.1 · AUDITORÍA DE CAMBIOS
 Fecha: 2026-09-10
 
