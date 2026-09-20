@@ -1,3 +1,18 @@
+METEORO · CINDY Y PREPARACIÓN WHATSAPP
+Fecha: 2026-09-20
+- Respaldo remoto backup-pre-cindy-whatsapp-20260920, con snapshot de Cindy desplegada v4.
+- Cindy v5: categorías críticas separadas, canales tratados como regla operativa, A&S con identidad unificada para búsqueda, permiso de compañía y clasificación prudente de evidencia.
+- Se mantienen las funciones existentes. Las conclusiones críticas requieren revisión; el modo de respaldo no infiere elegibilidad ni cobertura.
+- Demostración pública tools/cindy-preview.html: flujo de soporte, ventas, consentimiento, atención humana y baja con datos ficticios, sin servidor ni IA generativa.
+- Bandeja ADMIN de borradores y toma de atención, sin envío de mensajes.
+- meteoro-whatsapp v1: recepción preparada, desactivada por configuración incompleta, firma HMAC, cuenta/número explícitos, sin descarga de adjuntos ni envío.
+- Tablas privadas con RLS; funciones SECURITY INVOKER restringidas a service_role.
+- Prueba transaccional real de deduplicación, baja persistente, mensajes fuera de orden y toma humana: pasó; ROLLBACK dejó cero registros de prueba.
+- 16 pruebas locales de reglas/HTTP y comprobación TypeScript pasaron. Regresión de login y A&S: foco, recuperación y niveles preservados; observador estable.
+- docs/CINDY_MATRIZ_DOCUMENTAL_PENDIENTE.md identifica evidencia localizada; la matriz NO es certificable.
+- Pendientes: recuperación ADMIN, conversación autenticada real con IA, selección/verificación del número, alta Meta, recepción real, envío, leads y agenda. No se han probado ni declarado activos.
+- Los números candidatos se conservaron sin corregirlos en configuración privada; no se incluyeron en GitHub ni se conectaron.
+
 METEORO SMART NAVIGATOR v0.4.7 · RECUPERACIÓN SEGURA ADMIN
 Fecha: 2026-09-19
 

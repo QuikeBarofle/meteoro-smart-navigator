@@ -1,8 +1,9 @@
-const CACHE_NAME = 'meteoro-shell-v047-hotfix2';
+const CACHE_NAME = 'meteoro-shell-v047-cindy-prep1';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
 const AS_SCRIPT = './assets/meteoro-as-v046.js';
+const CINDY_SCRIPT = './assets/meteoro-cindy-v048.js';
 const SHELL = [
   './',
   './index.html',
@@ -21,7 +22,8 @@ const SHELL = [
   LAYOUT_SCRIPT,
   ENHANCEMENT_SCRIPT,
   FIX_SCRIPT,
-  AS_SCRIPT
+  AS_SCRIPT,
+  CINDY_SCRIPT
 ];
 
 self.addEventListener('install', event => {
@@ -108,6 +110,9 @@ async function injectNavigatorLayout(req){
   }
   if(!html.includes('meteoro-as-v046.js')){
     injectBeforeClosingBody('<script src="./assets/meteoro-as-v046.js?v=47-hotfix2"></script>');
+  }
+  if(!html.includes('meteoro-cindy-v048.js')){
+    injectBeforeClosingBody('<script src="./assets/meteoro-cindy-v048.js?v=48-prep1"></script>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');

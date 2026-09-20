@@ -1,0 +1,15 @@
+{
+  "name": "meteoro-smart-navigator-validation",
+  "version": "0.4.7",
+  "private": true,
+  "engines": { "node": ">=24.0.0" },
+  "scripts": {
+    "test": "node --test tools/test-cindy.mjs tools/test-cindy-runtime.mjs",
+    "test:login": "node tools/check-login-loop.cjs",
+    "check:edge": "deno check --node-modules-dir=manual supabase/functions/meteoro-cindy/index.ts supabase/functions/meteoro-whatsapp/index.ts"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.116.0",
+    "jsdom": "26.1.0"
+  }
+}
