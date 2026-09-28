@@ -75,22 +75,38 @@ const baseline = process.argv.includes('--baseline');
     assert.equal(d.activeElement.value, 'ui-probe');
     d.getElementById('recoveryBackBtn').click();
     assert(!d.getElementById('authGate').classList.contains('hidden'));
-    // Exercise repeated quote renders and all three existing plan selections.
-    for (const value of ['0.5', '1', '2']) {
-      d.getElementById('asQuantity').value = value;
-      w.renderQuotes();
-      await new Promise(resolve => setTimeout(resolve, 40));
-      const select = d.querySelector('.quote-plan-control[data-field="asQuantity"]');
-      assert(select, 'A&S plan control must still exist');
-      assert.equal(select.value, value, 'Decoration must preserve plan selection');
-      assert.deepEqual(Array.from(select.options, option => option.value), ['0.5', '1', '2']);
-    }
+    // Audit the actual transformed app, including state changes and stale selections.
+    const assertFlorida = () => {
+      w.analyze(); w.renderQuotes(); w.renderProducts('all'); w.renderPackages();
+      for (const id of ['results','quoteGrid','productGrid','packageGrid','objectiveGrid']) {
+        assert(!/accidente y enfermedad|a&s/i.test(d.getElementById(id).textContent), id + ' must exclude A&S');
+        assert(d.getElementById(id).children.length > 0, id + ' must preserve other products');
+      }
+      w.simSelectedIds={'sig-as':true,'sig-acc':true};
+      w.renderSimPolicySelector();
+      assert(!w.simSelectedIds['sig-as'], 'Stale A&S simulation selection cleared');
+      assert(w.simSelectedIds['sig-acc'], 'Other simulation selection preserved');
+      assert(!/accidente y enfermedad/i.test(d.getElementById('simPolicyGrid').textContent));
+      assert(w.productsById['sig-as'], 'Brochure product metadata preserved');
+      w.renderDocs();
+      assert(d.querySelector('[data-href*="Accident_Sickness"]'), 'Brochure link preserved');
+    };
+    assertFlorida();
+    w.selectedIds={'sig-acc':true,'sig-as':true};
+    const state=d.getElementById('state'); state.value='GA';
+    state.dispatchEvent(new w.Event('change'));
+    assert.equal(d.getElementById('stateTopSelect').value,'GA');
+    assert.equal(w.productsById['sig-acc'].evaluate(w.getCase()).price,undefined);
+    assert.equal(Object.keys(w.selectedIds).length,0);
+    state.value='FL';state.dispatchEvent(new w.Event('change'));
+    assertFlorida();
+    await new Promise(resolve => setTimeout(resolve, 100));
     const settled = callbacks;
     await new Promise(resolve => setTimeout(resolve, 100));
     assert.equal(callbacks, settled, 'No observer loop while idle');
     assert.equal(runaway, false);
     assert.deepEqual(errors, []);
     process.stdout.write(JSON.stringify({ result: 'PASS', callbacks, loginFocus: true,
-      recoveryOpenAndBack: true, allPlanSelectionsPreserved: true, idleSettled: true }) + '\n');
+      recoveryOpenAndBack: true, floridaSalesAndSimulatorAudited: true, stateSwitchAudited: true, brochurePreserved: true, idleSettled: true }) + '\n');
   } finally { w.close(); }
 })().catch(error => { process.stderr.write(error.stack + '\n'); process.exitCode = 1; });

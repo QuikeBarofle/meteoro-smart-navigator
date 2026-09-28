@@ -16,6 +16,20 @@ test('channel answers never turn product ids or browser facts into documentary p
   assert.equal(a.status,'operational');assert.match(a.answer,/Signature = canal iPad/);
   assert.match(a.answer,/misma póliza/);assert.match(a.answer,/pendiente de validación/);
 });
+test('state context closes Florida A&S sales without making another state inherit Florida rules',()=>{
+  const fl=guardedAnswer('Dónde se vende A&S por iPad y Agent Connect?',[],{state:'FL'});
+  assert.match(fl.answer,/ya no está disponible para nuevas ventas en Florida/);
+  assert.match(fl.answer,/brochure de consulta documental/);
+  const ga=guardedAnswer('Dónde se vende A&S por iPad y Agent Connect?',[],{state:'GA'});
+  assert.match(ga.answer,/Estado seleccionado: GA/);
+  assert.match(ga.answer,/No se reutilizan precios ni reglas de Florida/);
+});
+test('A&S sale-status questions are guarded even without channel wording',()=>{
+  const fl=guardedAnswer('¿A&S se vende en Florida?',[],{state:'FL'});
+  assert.match(fl.answer,/ya no está disponible para nuevas ventas en Florida/);
+  const ga=guardedAnswer('¿Accidente y Enfermedad está disponible?',[],{state:'GA'});
+  assert.match(ga.answer,/Estado seleccionado: GA/);
+});
 test('document hit does not mark an answer verified; conflicts and missing evidence stay visible',()=>{
   const hits=[{trust_status:'verified'}];
   assert.equal(responseStatus(hits,'Orientación general','verified',null),'operational');

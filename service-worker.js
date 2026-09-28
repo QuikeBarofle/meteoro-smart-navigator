@@ -1,9 +1,10 @@
-const CACHE_NAME = 'meteoro-shell-v047-cindy-prep1';
+const CACHE_NAME = 'meteoro-shell-v051-fl-brochure-only';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
 const AS_SCRIPT = './assets/meteoro-as-v046.js';
 const CINDY_SCRIPT = './assets/meteoro-cindy-v048.js';
+const STATE_SCRIPT = './assets/meteoro-state-catalog-v050.js';
 const SHELL = [
   './',
   './index.html',
@@ -23,7 +24,8 @@ const SHELL = [
   ENHANCEMENT_SCRIPT,
   FIX_SCRIPT,
   AS_SCRIPT,
-  CINDY_SCRIPT
+  CINDY_SCRIPT,
+  STATE_SCRIPT
 ];
 
 self.addEventListener('install', event => {
@@ -57,9 +59,15 @@ const CORE_BRIDGE = `
   bind('quoteCoverageOptions',function(){return quoteCoverageOptions},function(v){quoteCoverageOptions=v});
   bind('quoteEval',function(){return quoteEval},function(v){quoteEval=v});
   bind('quoteCoverageModeLabel',function(){return quoteCoverageModeLabel},function(v){quoteCoverageModeLabel=v});
+  bind('selectedIds',function(){return selectedIds},function(v){selectedIds=v||{}});
+  bind('simSelectedIds',function(){return simSelectedIds},function(v){simSelectedIds=v||{}});
   bind('renderQuotes',function(){return renderQuotes},function(v){renderQuotes=v});
+  bind('renderDocs',function(){return renderDocs});
   bind('renderProducts',function(){return renderProducts},function(v){renderProducts=v});
   bind('renderPackages',function(){return renderPackages},function(v){renderPackages=v});
+  bind('renderSimPolicySelector',function(){return renderSimPolicySelector},function(v){renderSimPolicySelector=v});
+  bind('renderExistingSimQuote',function(){return renderExistingSimQuote},function(v){renderExistingSimQuote=v});
+  bind('updateSimulatorVisibility',function(){return updateSimulatorVisibility},function(v){updateSimulatorVisibility=v});
   bind('renderWellness',function(){return renderWellness},function(v){renderWellness=v});
   bind('selectedQuoteSnapshot',function(){return selectedQuoteSnapshot},function(v){selectedQuoteSnapshot=v});
   bind('simpleLayerAmount',function(){return simpleLayerAmount},function(v){simpleLayerAmount=v});
@@ -70,6 +78,7 @@ const CORE_BRIDGE = `
   bind('applyRoleVisibility',function(){return applyRoleVisibility},function(v){applyRoleVisibility=v});
   bind('revealAuthorizedAppRemote',function(){return revealAuthorizedAppRemote},function(v){revealAuthorizedAppRemote=v});
   bind('getCase',function(){return getCase},function(v){getCase=v});
+  bind('analyze',function(){return analyze},function(v){analyze=v});
   bind('mk',function(){return mk});
   bind('statusRank',function(){return statusRank});
   bind('money',function(){return money});
@@ -114,6 +123,9 @@ async function injectNavigatorLayout(req){
   if(!html.includes('meteoro-cindy-v048.js')){
     injectBeforeClosingBody('<script src="./assets/meteoro-cindy-v048.js?v=48-prep1"></script>');
   }
+  if(!html.includes('meteoro-state-catalog-v050.js')){
+    injectBeforeClosingBody('<script src="./assets/meteoro-state-catalog-v050.js?v=51-brochure-only"></script>');
+  }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');
   headers.set('cache-control','no-cache');
@@ -150,7 +162,7 @@ self.addEventListener('fetch', event => {
 
   if (url.pathname.toLowerCase().endsWith('.pdf') || url.pathname.toLowerCase().endsWith('.pptx')) return;
 
-  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js') || url.pathname.endsWith('/assets/meteoro-v044-fix.js') || url.pathname.endsWith('/assets/meteoro-as-v046.js')){
+  if(url.pathname.endsWith('/assets/meteoro-layout-v042.js') || url.pathname.endsWith('/assets/meteoro-enhancements-v044.js') || url.pathname.endsWith('/assets/meteoro-v044-fix.js') || url.pathname.endsWith('/assets/meteoro-as-v046.js') || url.pathname.endsWith('/assets/meteoro-state-catalog-v050.js')){
     event.respondWith(fetch(req,{cache:'no-store'}).then(res => {
       const copy=res.clone();
       caches.open(CACHE_NAME).then(cache => cache.put(req,copy));

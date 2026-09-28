@@ -4,7 +4,7 @@
   "private": true,
   "engines": { "node": ">=24.0.0" },
   "scripts": {
-    "test": "node --test tools/test-cindy.mjs tools/test-cindy-runtime.mjs",
+    "test": "node --test tools/test-cindy.mjs tools/test-cindy-runtime.mjs && node tools/test-state-catalog.mjs",
     "test:login": "node tools/check-login-loop.cjs",
     "check:edge": "deno check --node-modules-dir=manual supabase/functions/meteoro-cindy/index.ts supabase/functions/meteoro-whatsapp/index.ts"
   },

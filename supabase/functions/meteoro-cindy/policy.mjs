@@ -1,5 +1,5 @@
 // Shared, deterministic rules. No credentials, customer data or API calls.
-export const POLICY_VERSION = '2026-09-20.1';
+export const POLICY_VERSION = '2026-09-28.1';
 export const MISSING = 'No puedo confirmar esta información con los documentos actualmente disponibles.';
 export const CATEGORY_DEFINITIONS = Object.freeze({
   'NO CALIFICA': 'No cumple un requisito de elegibilidad documentado para la solicitud concreta. No equivale automáticamente a una exclusión.',
@@ -16,7 +16,9 @@ export function criticalQuestion(question) {
   return /calific|elegib|preexist|pre.exist|exclu|limitaci|limitation|espera|underwriting|cobert|cubre|cubrir|reclamo|claim|infarto|cardiac|diabet|sintoma|diagnost|tratamiento|embaraz|dependient|\bhijos\b/.test(normalize(question));
 }
 export function channelQuestion(question) {
-  return /signature|agent connect|\bipad\b|\bcanal(?:es)?\b|donde (?:se )?vend|por donde|dos productos|misma poliza/.test(normalize(question));
+  const q = normalize(question);
+  return /signature|agent connect|\bipad\b|\bcanal(?:es)?\b|donde (?:se )?vend|por donde|dos productos|misma poliza/.test(q)
+    || (/(?:a&s|accidente y enfermedad)/.test(q) && /\b(?:vende|vender|venta|vendible|disponible|disponibilidad)\b/.test(q));
 }
 export function companyAllowed(user, company) {
   if (!['combined', 'manhattan', 'sunhealth', 'aca'].includes(company)) return false;
@@ -41,12 +43,16 @@ export function categoriesInQuestion(question) {
   if (/revision|revisar|underwriting/.test(q)) categories.push('REQUIERE REVISIÓN');
   return categories;
 }
-export function operationalChannelAnswer() {
-  return 'Regla operativa confirmada por Carlos Barona: Signature = canal iPad; Signature Solutions = Agent Connect. A&S es la misma póliza disponible por ambos canales, no dos productos distintos.\n\nLa matriz completa de productos por canal sigue pendiente de validación documental. No puedo confirmar otras asignaciones ni hacer esa matriz certificable sin la evidencia correspondiente.';
+export function operationalChannelAnswer(state = 'FL') {
+  const code = String(state || 'FL').toUpperCase();
+  if (code === 'FL') {
+    return 'Regla operativa confirmada por Carlos Barona: Signature = canal iPad; Signature Solutions = Agent Connect. A&S es la misma póliza por ambos canales, no dos productos distintos.\n\nActualización estatal: Accidente y Enfermedad ya no está disponible para nuevas ventas en Florida. Se conserva en Meteoro únicamente como brochure de consulta documental; no debe presentarse como vendible ni por iPad ni por Agent Connect.\n\nLa matriz completa de otros productos por canal y estado sigue pendiente de validación documental.';
+  }
+  return 'Estado seleccionado: ' + code + '. Signature = canal iPad y Signature Solutions = Agent Connect. La disponibilidad de A&S y de los demás productos debe verificarse con la matriz documental, formulario, tarifa y reglas vigentes de ese estado. No se reutilizan precios ni reglas de Florida y no puedo confirmar venta en este estado sin esa evidencia.';
 }
-export function guardedAnswer(question, hits = []) {
+export function guardedAnswer(question, hits = [], context = {}) {
   if (channelQuestion(question)) return {
-    answer: operationalChannelAnswer(), status: 'operational', kind: 'channel_policy',
+    answer: operationalChannelAnswer(context.state || 'FL'), status: 'operational', kind: 'channel_policy',
     review: true, categories: categoriesInQuestion(question),
     sources: [{ label: 'Regla operativa de Carlos Barona · matriz documental pendiente', status: 'operational', href: '' }]
   };
