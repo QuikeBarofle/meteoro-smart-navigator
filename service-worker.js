@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v051-fl-brochure-only';
+const CACHE_NAME = 'meteoro-shell-v051-prices-manhattan';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
