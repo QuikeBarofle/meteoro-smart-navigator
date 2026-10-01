@@ -92,6 +92,22 @@ const baseline = process.argv.includes('--baseline');
       assert(d.querySelector('[data-href*="Accident_Sickness"]'), 'Brochure link preserved');
     };
     assertFlorida();
+    // Annual wellness: waiting period, explicit eligibility, and no repeat payment.
+    const wellness = {event:'wellness',policyDays:89,wellnessEligible:true,wellnessPaid:false};
+    for (const id of ['sig-ip','ss-hi','ss-acc','ss-critical']) {
+      const p=w.productsById[id];
+      assert.equal(w.simpleLayerAmount(p,wellness).amount,0,id+' waiting period');
+      assert.equal(w.simpleLayerAmount(p,{...wellness,policyDays:90}).amount,p.wellness.amount,id+' annual amount');
+      assert.equal(w.simpleLayerAmount(p,{...wellness,policyDays:365,wellnessPaid:true}).amount,0,id+' annual repeat');
+      assert.equal(w.simpleLayerAmount(p,{...wellness,policyDays:365,wellnessEligible:false}).amount,0,id+' confirmation required');
+    }
+    assert.equal(w.simpleLayerAmount(w.productsById['sig-cancer'],{...wellness,policyDays:365}).amount,0,'Cancer is not annual');
+    const spanish=['Hospital_Indemnity_Brochure_ES.pdf','SickPay_Plus_Brochure_ES.pdf','Cancer_Protector_FL_ES.pdf','Accident_Protector_FL_ES.pdf','Income_Protector_Hospitalizacion_16x9.pdf'];
+    for(const file of spanish){
+      assert(d.querySelector('#productGrid [data-href="docs/'+file+'"]'),'Product document '+file);
+      assert(d.querySelector('#docsGrid [data-href="docs/'+file+'"]'),'Reference document '+file);
+      assert(fs.readFileSync(path.join(root,'docs',file)).subarray(0,4).toString()==='%PDF','Valid PDF '+file);
+    }
     w.selectedIds={'sig-acc':true,'sig-as':true};
     const state=d.getElementById('state'); state.value='GA';
     state.dispatchEvent(new w.Event('change'));

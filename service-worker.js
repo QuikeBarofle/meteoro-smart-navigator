@@ -1,4 +1,4 @@
-const CACHE_NAME = 'meteoro-shell-v051-prices-manhattan';
+const CACHE_NAME = 'meteoro-shell-v052-brochures-prices-wellness';
 const LAYOUT_SCRIPT = './assets/meteoro-layout-v042.js';
 const ENHANCEMENT_SCRIPT = './assets/meteoro-enhancements-v044.js';
 const FIX_SCRIPT = './assets/meteoro-v044-fix.js';
@@ -124,7 +124,7 @@ async function injectNavigatorLayout(req){
     injectBeforeClosingBody('<script src="./assets/meteoro-cindy-v048.js?v=48-prep1"></script>');
   }
   if(!html.includes('meteoro-state-catalog-v050.js')){
-    injectBeforeClosingBody('<script src="./assets/meteoro-state-catalog-v050.js?v=51-brochure-only"></script>');
+    injectBeforeClosingBody('<script src="./assets/meteoro-state-catalog-v050.js?v=52-spanish-wellness"></script>');
   }
   const headers=new Headers(res.headers);
   headers.set('content-type','text/html; charset=utf-8');

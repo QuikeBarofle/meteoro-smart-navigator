@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  var REL='v0.5.1';
+  var REL='v0.5.2';
   var STATE_LIST=[
     ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['DC','Distrito de Columbia'],['FL','Florida'],['GA','Georgia'],['HI','Hawái'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],['KS','Kansas'],['KY','Kentucky'],['LA','Luisiana'],['ME','Maine'],['MD','Maryland'],['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Misisipi'],['MO','Misuri'],['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','Nuevo Hampshire'],['NJ','Nueva Jersey'],['NM','Nuevo México'],['NY','Nueva York'],['NC','Carolina del Norte'],['ND','Dakota del Norte'],['OH','Ohio'],['OK','Oklahoma'],['OR','Oregón'],['PA','Pensilvania'],['RI','Rhode Island'],['SC','Carolina del Sur'],['SD','Dakota del Sur'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],['VA','Virginia'],['WA','Washington'],['WV','Virginia Occidental'],['WI','Wisconsin'],['WY','Wyoming']
   ];
